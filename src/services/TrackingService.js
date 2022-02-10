@@ -6,25 +6,18 @@ import React, {
 import { requestMultiple, PERMISSIONS } from 'react-native-permissions';
 import Geolocation from 'react-native-geolocation-service';
 
-const TrackingService = () => {
+const TrackingService = (record = null) => {
 
-    const INITIALIZED = 'initialized';
     const PAUSED = 'paused';
-    const STOPED = 'stoped';
+    const FINISHED = 'finished';
     const TRACKING = 'tracking';
 
-    const [ currentStatus, setCurrentStatus] = useState(null);
-    const [ currentLocation, setCurrentLocation ] = useState({});
+    const [ trackingStatus, setTrackingStatus] = useState(null);
+    const [ lastLocation, setLastLocation ] = useState({});
     const [ permission, setPermission ] = useState(null);
     const [ errorMessage, setErrorMessage ] = useState(null);
     
     const [data, setData] = useState({
-        id: null,
-        startDate: null,
-        endDate: null,
-        startPoint: null,
-        endPoint: null,
-        status: null,    
         tracking: [],
         trackingInfo: []
     });
@@ -34,6 +27,14 @@ const TrackingService = () => {
     });
 
     useEffect(()=> {
+        
+        if (record) {
+            setTrackingStatus(record.status);
+            setLastLocation(record.tracking[record.tracking.length-1]);
+            data.tracking = record.tracking,
+            data.trackingInfo = record.trackingInfo;
+            setData(data);
+        }
 
         (async function loadPosition() {
             const result = requestMultiple(
@@ -68,7 +69,6 @@ const TrackingService = () => {
 
     const startTracking = () => {
         console.log('start called')
-        console.log(permission)
         
         if (permission && unsubscribe.watchId == null) {
             setErrorMessage(null);
@@ -78,8 +78,9 @@ const TrackingService = () => {
                     let location = position.coords;
                     location['timestamp'] = position.timestamp;
 
-                    setCurrentLocation(location);
-                    updatecurrentStatus(TRACKING, location);
+                    setLastLocation(location);
+                    data.tracking.push(location);
+                    updateStatus(TRACKING, location);
                 },
                 error => {
                   setErrorMessage(error.message);
@@ -107,76 +108,42 @@ const TrackingService = () => {
 
     const pauseTracking = () => {
         console.log('pause called')
+        unsubscribeGeolocation();     
 
         if (data.tracking.length > 0) {
-            updatecurrentStatus(PAUSED, data.tracking[data.tracking.length - 1]);
+            updateStatus(PAUSED, data.tracking[data.tracking.length - 1]);
         }
 
     }
 
     const stopTracking = () => {
         console.log('stop called')
+        unsubscribeGeolocation();     
 
         if (data.tracking.length > 0) {            
-            updatecurrentStatus(STOPED, data.tracking[data.tracking.length - 1]);
+            updateStatus(FINISHED, data.tracking[data.tracking.length - 1]);
         }
     }
 
-    const updatecurrentStatus = (status, location) => {
+    const updateStatus = (status, location) => {
+        if (data.status === status) {
+            return;
+        }
+        
+        console.log("Change status to: " + status);
+        setTrackingStatus(status);
 
-        if (status == INITIALIZED) {
-
-            status = TRACKING;
-
-        } else if (status == PAUSED) {
-
-            unsubscribeGeolocation();            
-
-        } else if (status == STOPED) {
-
-            data.endDate = location.timestamp;
-            data.endPoint = {
+        data.status = status;
+        data.trackingInfo.push({
+            date: location.timestamp,
+            point: {
                 latitude: location.latitude,
                 longitude: location.longitude
-            };   
+            },
+            status: status
+        });
 
-            unsubscribeGeolocation();                     
-
-        } else if (status == TRACKING) {
-
-            if (data.tracking.length == 0) {
-
-                data.startDate = location.timestamp;
-                
-                data.startPoint = {
-                    latitude: location.latitude,
-                    longitude: location.longitude
-                };
-            
-            }
-
-            data.tracking.push(location);
-
-        }
-
-        if (data.status != status) {
-            console.log("Change status to: " + status);
-            setCurrentStatus(status);
-
-            data.status = status;
-            data.trackingInfo.push({
-                date: location.timestamp,
-                point: {
-                    latitude: location.latitude,
-                    longitude: location.longitude
-                },
-                status: status
-            });
-
-        }
-
-        
-        setData(data);        
+        setData(data);            
 
     }
 
@@ -190,14 +157,13 @@ const TrackingService = () => {
     }
 
     return {
-        currentStatus,
-        currentLocation,
+        trackingStatus,
+        lastLocation,
         data,
         permission,
         errorMessage,
-        INITIALIZED,
         PAUSED,
-        STOPED,
+        FINISHED,
         TRACKING,        
         startTracking,
         pauseTracking,

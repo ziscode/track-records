@@ -27,28 +27,7 @@ const HomeScreen = ({ navigation }) => {
       );
 
 
-      db.transaction(function (txn) {
-        txn.executeSql(
-          "SELECT name FROM sqlite_master WHERE type='table' AND name='tracking'",
-          [],
-          function (tx, res) {
-
-            if (res.rows.length == 0) {
-
-              console.log("Tracking table created");
-
-              txn.executeSql('DROP TABLE IF EXISTS tracking', []);
-              txn.executeSql(
-                'CREATE TABLE IF NOT EXISTS tracking(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT)',
-                []
-              );
-            } else {
-              console.log("Tracking table exist");
-            }
-
-          }
-        );
-      });
+      
 
     });
 
@@ -63,42 +42,10 @@ const HomeScreen = ({ navigation }) => {
           <MyImageButton
               title="Tracking"
               btnColor='#2992C4'
-              btnIcon="user-plus"
+              btnIcon="map-marker"
               customClick={() => navigation.navigate('Tracking')}
           />
-
-            <MyImageButton
-              title="Registrar Usuário"
-              btnColor='#2992C4'
-              btnIcon="user-plus"
-              customClick={() => navigation.navigate('Register')}
-            />
-
-            <MyImageButton
-              title="Atualizar Usuário"
-              btnColor='#A45BB9'
-              btnIcon="user-circle"
-              customClick={() => navigation.navigate('Update')}
-            />
-
-            <MyImageButton
-              title="Visualizar Usuário"
-              btnColor='#F9AD29'
-              btnIcon="user"
-              customClick={() => navigation.navigate('View')}
-            />
-            <MyImageButton
-              title="Visualizar Todos"
-              btnColor='#384F62'
-              btnIcon="users"
-              customClick={() => navigation.navigate('ViewAll')}
-            />
-            <MyImageButton
-              title="Excluir Usuário"
-              btnColor='#D1503A'
-              btnIcon="user-times"
-              customClick={() => navigation.navigate('Delete')}
-            />
+           
           </View>
         </View>
 
