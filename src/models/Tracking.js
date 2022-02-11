@@ -84,7 +84,7 @@ const TrackingModel = () => {
     }
 
     const remove = async (id) => {
-        let query = await ExecuteQuery('DELETE FROM tracking WHRE id = ?', [id]);
+        let query = await ExecuteQuery('DELETE FROM tracking WHERE id = ?', [id]);
         return query.rowsAffected > 0;        
     }
 

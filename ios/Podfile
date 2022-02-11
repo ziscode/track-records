@@ -3,7 +3,7 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 platform :ios, '11.0'
 
-target 'StarterProject' do
+target 'TrackRecords' do
   config = use_native_modules!
 
   use_react_native!(
@@ -12,11 +12,7 @@ target 'StarterProject' do
     :hermes_enabled => false
   )
 
-  pod 'react-native-location', :path => '../node_modules/react-native-location'
-
-  pod 'react-native-sqlite-storage', :path => '../node_modules/react-native-sqlite-storage'
-
-  target 'StarterProjectTests' do
+  target 'TrackRecordsTests' do
     inherit! :complete
     # Pods for testing
   end

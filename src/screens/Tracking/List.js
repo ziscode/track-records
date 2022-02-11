@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, View, SafeAreaView } from 'react-native';
+import { FlatList, Alert, View, SafeAreaView } from 'react-native';
 import { Text, Card, Divider } from 'react-native-elements';
 import AppIconButton from '../../components/AppIconButton';
 import AppCircleButton from '../../components/AppCircleButton';
@@ -7,7 +7,7 @@ import { DatabaseConnection } from '../../database/database-connection';
 import moment from 'moment';
 import TrackingModel from '../../models/Tracking';
 import { Styles } from '../../components/Styles';
-
+import AlertAsync from "react-native-alert-async";
 
 const db = DatabaseConnection.getConnection();
 
@@ -15,11 +15,11 @@ const TrackingList = ({ navigation }) => {
     let [flatListItems, setFlatListItems] = useState([]);
     let unsubscribeFocus = null;
 
-    const { list, find, removeAll } = TrackingModel();
+    const { list, find, remove, removeAll } = TrackingModel();
 
     useEffect(() => {
         // removeAll()
-        updateList();        
+        updateList();
 
         unsubscribeFocus = navigation.addListener('focus', () => {
             updateList();
@@ -43,6 +43,43 @@ const TrackingList = ({ navigation }) => {
         }
     }
 
+    const requestRemovePermission = (id) => {
+        Alert.alert(
+            'Success',
+            `Are you sure you want to remove the tracking (ID: ${id})!`,
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Yes",
+                    onPress: () => { removeTracking(id) }
+                }
+            ],
+            { cancelable: true }
+        );
+    }
+
+    const removeTracking = async (id) => {
+        let res = await remove(id);
+        
+        if (res) {
+            updateList();
+            
+            await AlertAsync(
+                'Success',
+                'Record was successfully removed!',
+                [
+                    {
+                        text: 'OK'
+                    }
+                ],
+                { cancelable: true }
+            );
+        }
+    }
+
     let listItemView = (item) => {
         return (
 
@@ -50,6 +87,8 @@ const TrackingList = ({ navigation }) => {
 
                 <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
                     <Text style={[Styles.notes, {fontSize:22}]}>Tracking ID: {item.id}</Text>
+
+                    <View style={{flexDirection: "row", flexWrap: "wrap"}}>
                     {
                         item.status == 'paused' && 
                         <AppCircleButton
@@ -58,7 +97,20 @@ const TrackingList = ({ navigation }) => {
                             size={15}
                             customClick={() => editTracking(item.id)}
                         />
-                    }                    
+                    }
+
+                    <AppIconButton                    
+                        btnIcon={"trash"}
+                        color="danger"
+                        size={14}
+                        style={{
+                            marginLeft: 10,
+                            minWidth: 38
+                        }}   
+                        customClick={() => requestRemovePermission(item.id)}
+                    />     
+
+                    </View>
 				</View>                
 				
 				<Divider style={{ backgroundColor: '#dfe6e9', marginVertical:10}} />
