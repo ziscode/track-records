@@ -1,23 +1,23 @@
 import React, { useEffect } from "react";
 import { DatabaseConnection } from "../database/database-connection";
+import DeviceInfo from 'react-native-device-info';
 
 const db = DatabaseConnection.getConnection();
 
 const TrackingModel = () => {
 
+    const uniqueId = DeviceInfo.getUniqueId();
+
     const model = {
-        id: null,
+        deviceId: null,
         startDate: null,
         endDate: null,
-        startPoint: null,
-        endPoint: null,
+        initialCoordinate: null,
+        finalCoordinate: null,
         status: null,
         tracking: [],
         trackingInfo: [],
-        createdAt: null,
-        createdBy: null,
-        removedAt: null,
-        removedBy: null
+        finished: false //TODO selected by user
     };
 
     useEffect(() => {
@@ -36,7 +36,16 @@ const TrackingModel = () => {
     });
 
     const list = async () => {
-        let query = await ExecuteQuery('SELECT * FROM tracking ORDER BY id DESC');
+        let query = await ExecuteQuery(
+                `SELECT 
+                    * 
+                FROM 
+                    tracking 
+                WHERE 
+                    apiid IS NULL 
+                    AND removedat IS NULL 
+                ORDER BY id DESC`
+            );
         let rows = query.rows;
         let list = [];
 
@@ -50,9 +59,43 @@ const TrackingModel = () => {
         return list;
     }
 
+    const listPostData = async () => {
+        let query = await ExecuteQuery(
+                `SELECT 
+                    * 
+                FROM 
+                    tracking 
+                WHERE 
+                    apiid IS NULL 
+                    AND removedat IS NULL 
+                ORDER BY id DESC`
+            );
+        let rows = query.rows;
+        let list = [];
+
+        for (let i = 0; i < rows.length; i++) {
+            var item = rows.item(i);
+            let data = JSON.parse(item.data);
+
+            if (data.status === 'finished') {
+                list.push(data);
+            }
+        }
+
+        return list;
+    }
+
     const find = async (id) => {
 
-        let query = await ExecuteQuery('SELECT * FROM tracking WHERE id = ?', [id]);
+        let query = await ExecuteQuery(
+            `SELECT 
+                * 
+            FROM 
+                tracking 
+            WHERE 
+                apiid IS NULL 
+                AND removedat IS NULL 
+                AND id = ?`, [id]);
         let rows = query.rows;
         let model = null;
 
@@ -69,18 +112,32 @@ const TrackingModel = () => {
     const save = async (model) => {
         let data = { ...checkModel(model) };
         let id = data.id;
+        let deviceUniqueId = data.deviceId;
         delete data.id;
-        let sql = 'INSERT INTO tracking (data) VALUES (?)';
-        let json = JSON.stringify(data);
+        let json = JSON.stringify(data); 
         let params = [json];
+        let sql = '';
 
-        if (id !== null) {
+        if (id > 0) {
             sql = 'UPDATE tracking SET data = ? WHERE id = ?';
             params.push(id)
+        } else {
+            sql = 'INSERT INTO tracking (data, deviceuniqueid, createdat, createdby) VALUES (?, ?, ?, ?)';
+            
+            params.push(deviceUniqueId);
+            params.push(new Date().getTime());
+            params.push(1); //TODO zis: update number by user authenticated                       
         }
 
         let query = await ExecuteQuery(sql, params);
-        return query.rowsAffected > 0;        
+        let result = query.rowsAffected > 0;
+        return result;        
+    }
+
+    const logicalRemove = async (id) => {
+        let sql = 'UPDATE tracking SET removedat = ?, removedby = ? WHERE id = ?';
+        let query = await ExecuteQuery(sql, [new Date().getTime(), 1, id]); //TODO create logic to get current user in app and add as params   
+        return query.rowsAffected > 0; 
     }
 
     const remove = async (id) => {
@@ -93,16 +150,43 @@ const TrackingModel = () => {
         return query.rowsAffected > 0;        
     }
 
+    const updatePostDataSuccess = async (list) => {
+        let count = 0;
+
+        for (let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let sql = 'UPDATE tracking SET apiid = ? WHERE deviceuniqueid = ?';
+            let query = await ExecuteQuery(sql, [item.id, item.deviceId]);   
+            count += query.rowsAffected;
+        }
+        
+        return count == list.length;
+    }
+
+    const updatePostDataErrors = async (list) => {
+        let count = 0;
+
+        for (let i = 0; i < list.length; i++) {
+            let item = list[i];
+            let sql = 'UPDATE tracking SET posterrors = ? WHERE deviceuniqueid = ?';
+            let errors = JSON.stringify(item.errors);
+            let query = await ExecuteQuery(sql, [errors, item.deviceId]);   
+            count += query.rowsAffected;
+        }
+
+        return count == list.length;
+    }
+
     const checkModel = (model) => {
         if (model.startDate === null) {
             let location = model.tracking.reduce(function (prev, curr) {
                 return prev.timestamp < curr.timestamp ? prev : curr;
             });
 
+            let d = new Date().getTime();
+            model.deviceId = uniqueId + '_' + d;
             model.startDate = location.timestamp;
-            model.startPoint = { latitude: location.latitude, longitude: location.longitude };
-            model.createdAt = new Date().getTime();
-            model.createdBy = 1; //TODO create logic to get current user in app            
+            model.initialCoordinate = { latitude: location.latitude, longitude: location.longitude };                   
         }
 
         if (model.status === 'finished' && model.endDate === null) {
@@ -111,7 +195,7 @@ const TrackingModel = () => {
             });
 
             model.endDate = location.timestamp;
-            model.endPoint = { latitude: location.latitude, longitude: location.longitude };
+            model.finalCoordinate = { latitude: location.latitude, longitude: location.longitude };
         }
 
         return model;
@@ -124,19 +208,25 @@ const TrackingModel = () => {
                 "SELECT name FROM sqlite_master WHERE type='table' AND name='tracking'",
                 [],
                 function (tx, res) {
-
+                    
                     if (res.rows.length == 0) {
-                        console.log("Tracking table created");
-
-                        txn.executeSql('DROP TABLE IF EXISTS tracking', []);
+                        //txn.executeSql('DROP TABLE IF EXISTS tracking', []);
                         txn.executeSql(
-                            'CREATE TABLE IF NOT EXISTS tracking(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT)',
+                            `CREATE TABLE IF NOT EXISTS tracking
+                                (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                                    apiid INTEGER, 
+                                    deviceuniqueid TEXT,
+                                    data TEXT,
+                                    createdat INTEGER,
+                                    createdby INTEGER,
+                                    removedat INTEGER,
+                                    removedby INTEGER,
+                                    posterrors TEXT
+                                )`,
                             []
                         );
-                    } else {
-                        console.log("Tracking table exist");
                     }
-
                 }
             );
         });
@@ -148,8 +238,12 @@ const TrackingModel = () => {
         find,
         list,
         save,
+        logicalRemove,
         remove,
-        removeAll
+        removeAll,
+        listPostData,
+        updatePostDataSuccess,
+        updatePostDataErrors
     }
 }
 

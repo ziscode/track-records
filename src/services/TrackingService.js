@@ -68,7 +68,6 @@ const TrackingService = (record = null) => {
     }, []);
 
     const startTracking = () => {
-        console.log('start called')
         
         if (permission && unsubscribe.watchId == null) {
             setErrorMessage(null);
@@ -84,7 +83,6 @@ const TrackingService = (record = null) => {
                 },
                 error => {
                   setErrorMessage(error.message);
-                  console.log(error);
                 },
                 {
                   enableHighAccuracy: true,
@@ -98,16 +96,13 @@ const TrackingService = (record = null) => {
                 setUnsubscribe({'watchId':watchId})
             }
 
-            console.log('WATCH ID ' +watchId)
-
         } else {
-            console.log('APP WITHOUT LOCATION PERMISSION')
+            //TODO app without geo position
         }
 
     }
 
     const pauseTracking = () => {
-        console.log('pause called')
         unsubscribeGeolocation();     
 
         if (data.tracking.length > 0) {
@@ -117,7 +112,6 @@ const TrackingService = (record = null) => {
     }
 
     const stopTracking = () => {
-        console.log('stop called')
         unsubscribeGeolocation();     
 
         if (data.tracking.length > 0) {            
@@ -130,7 +124,6 @@ const TrackingService = (record = null) => {
             return;
         }
         
-        console.log("Change status to: " + status);
         setTrackingStatus(status);
 
         data.status = status;

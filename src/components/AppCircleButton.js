@@ -16,8 +16,6 @@ const AppCircleButton = (props) => {
     }
   }
 
-  console.log(style)
-
   return (
     <TouchableOpacity
       activeOpacity={props.disabled ? 0.1 : 1}

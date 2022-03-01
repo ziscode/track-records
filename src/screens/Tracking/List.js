@@ -15,10 +15,10 @@ const TrackingList = ({ navigation }) => {
     let [flatListItems, setFlatListItems] = useState([]);
     let unsubscribeFocus = null;
 
-    const { list, find, remove, removeAll } = TrackingModel();
+    const { list, find, logicalRemove } = TrackingModel();
 
+    
     useEffect(() => {
-        // removeAll()
         updateList();
 
         unsubscribeFocus = navigation.addListener('focus', () => {
@@ -62,7 +62,7 @@ const TrackingList = ({ navigation }) => {
     }
 
     const removeTracking = async (id) => {
-        let res = await remove(id);
+        let res = await logicalRemove(id);
         
         if (res) {
             updateList();
@@ -92,12 +92,12 @@ const TrackingList = ({ navigation }) => {
                     {
                         item.status == 'paused' && 
                         <AppCircleButton
-                            btnIcon="play"
-                            color="warning"
+                            btnIcon="play"  
+                            style={{backgroundColor: '#05445E', maxWidth:36, maxHeight:35}}                          
                             size={15}
                             customClick={() => editTracking(item.id)}
                         />
-                    }
+                    }                    
 
                     <AppIconButton                    
                         btnIcon={"trash"}

@@ -10,6 +10,6 @@ export const DatabaseConnection = {
       location: 'default'
     },
     () => {},
-    error => { console.log(error) }
+    error => {  }
   ),
 };

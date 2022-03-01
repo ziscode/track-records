@@ -3,7 +3,7 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 import Icon from 'react-native-vector-icons/FontAwesome'
 
-const MyImageButton = (props) => {
+const ImageButton = (props) => {
 
   return (
     <TouchableOpacity
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginLeft: 35,
     marginRight: 35,
-    borderRadius: 5,
+    borderRadius: 0,
   },
   text: {
     color: '#ffffff',
@@ -38,4 +38,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default MyImageButton;
+export default ImageButton;

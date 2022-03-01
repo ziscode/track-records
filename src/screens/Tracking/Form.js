@@ -7,14 +7,11 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Text, Card, Divider } from 'react-native-elements';
-import { DatabaseConnection } from '../../database/database-connection';
 import TrackingService from '../../services/TrackingService';
 import moment from 'moment';
 import TrackingModel from '../../models/Tracking';
 import AppCircleButton from '../../components/AppCircleButton';
 import { Styles } from '../../components/Styles';
-
-const db = DatabaseConnection.getConnection();
 
 const TrackingForm = ({ route, navigation }) => {
 
@@ -48,7 +45,6 @@ const TrackingForm = ({ route, navigation }) => {
     unsubscribeBackListener = navigation.addListener('beforeRemove', handleBackButton);
 
     return () => {
-      console.log('unmount')
       unsubscribeBackListener && unsubscribeBackListener();
     };
 

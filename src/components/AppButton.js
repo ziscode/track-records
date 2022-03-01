@@ -10,7 +10,7 @@ const btnColors = {
   warning: '#ffc107'
 }
 
-const Mybutton = (props) => {
+const AppButton = (props) => {
   
   if (!props.visible) {
     return null;
@@ -58,10 +58,10 @@ Mybutton.propTypes = {
 Mybutton.defaultProps = {
   disabled: false,
   visible: true,
-  customClick: (event) => {console.log('eee')},
+  customClick: (event) => {},
   backgroundColor: 'primary',
   buttonStyle: null,
   labelStyle: null
 };
 
-export default Mybutton;
+export default AppButton;

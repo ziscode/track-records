@@ -1,37 +1,40 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, SafeAreaView } from 'react-native';
-import MyImageButton from '../components/MyImageButton';
-import { DatabaseConnection } from '../database/database-connection';
-const db = DatabaseConnection.getConnection();
-
+import React from 'react';
+import { View, SafeAreaView, Alert } from 'react-native';
+import ImageButton from '../components/ImageButton';
+import PostDataService from '../services/PostDataService';
+import { useAuth } from '../services/AuthService';
 
 const HomeScreen = ({ navigation }) => {
   
-  useEffect(() => {
-    
-    db.transaction(function (txn) {
-      txn.executeSql(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='table_user'",
-        [],
-        function (tx, res) {
-          console.log('item:', res.rows.length);
-          if (res.rows.length == 0) {
-            console.log("AA")
-            txn.executeSql('DROP TABLE IF EXISTS table_user', []);
-            txn.executeSql(
-              'CREATE TABLE IF NOT EXISTS table_user(user_id INTEGER PRIMARY KEY AUTOINCREMENT, user_name VARCHAR(20), user_contact INT(10), user_address VARCHAR(255))',
-              []
-            );
-          }
-        }
-      );
+  const { postTracking } = PostDataService();
+  const { Logout } = useAuth();
 
+  const sendData = async () => {
+    const result = await postTracking();
+    let message = 'Não há dados para enviar.';
+    let messageList = ['AAAAAAAAAAAA'];
 
-      
+    if (result) {
+      if (result.success > 0) {
+        messageList.push(result.success+' registros foram salvos com sucesso.');
+      }
 
-    });
+      if (result.errors > 0) {
+        messageList.push(result.success+' registros apresentaram erros durante a validação.');
+      }
 
-  }, []);
+      if (result.isUpdatePost === false || result.isUpdateErrors === false) {
+        messageList.push('Ocorreu um erro durante a atualização dos dados no aplicativo mobile!');
+      }
+
+      message = messageList.join('\n\n');
+    }
+
+    Alert.alert(
+      'Success',
+      message
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -39,11 +42,25 @@ const HomeScreen = ({ navigation }) => {
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
 
-          <MyImageButton
-              title="Tracking"
+          <ImageButton
+              title="Monitoramentos"
               btnColor='#2992C4'
               btnIcon="map-marker"
               customClick={() => navigation.navigate('Tracking')}
+          />
+
+          <ImageButton
+              title="Enviar Dados"
+              btnColor='#2992C4'
+              btnIcon="rocket"
+              customClick={sendData}
+          />
+
+          <ImageButton
+              title="Sair"
+              btnColor='#2992C4'
+              btnIcon="sign-out"
+              customClick={Logout}
           />
            
           </View>
