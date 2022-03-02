@@ -3,6 +3,7 @@ import React, {
     useEffect
 } from 'react';
 
+import { Platform } from 'react-native';
 import { requestMultiple, PERMISSIONS } from 'react-native-permissions';
 import Geolocation from 'react-native-geolocation-service';
 
@@ -36,36 +37,39 @@ const TrackingService = (record = null) => {
             setData(data);
         }
 
-        (async function loadPosition() {
-            const result = requestMultiple(
-                [
-                    PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
-                    PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION
-                ]).then(
-                    (statuses) => {
-                        const statusFine = statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION];
-                        const statusBack = statuses[PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION];
-                        
-                        if (Platform.Version < 29) {
-                            if (statusFine == 'granted') {
-                                return true;
-                            } else {
-                                setErrorMessage('User did not accept GPS usage request!');
-                            }
-                        }
-                        
-                        if (statusFine == 'granted' && statusBack == 'granted') {
-                            return true;
-                        } else {
-                            setErrorMessage('User did not accept GPS usage request!');
-                        }
-                    },
-                );
-
-            setPermission(result);
-        })()
+        loadPosition();
 
     }, []);
+
+    const loadPosition = async () => {
+        const result = await requestMultiple(
+        [
+            PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+            PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION
+        ]).then(
+            (statuses) => {
+                const statusFine = statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION];
+                const statusBack = statuses[PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION];
+                
+                if (Platform.Version < 29) {
+                    if (statusFine == 'granted') {
+                        return true;
+                    } else {
+                        setErrorMessage('User did not accept GPS usage request!');
+                    }
+                }
+                
+                if (statusFine == 'granted' && statusBack == 'granted') {
+                    return true;
+                } else {
+                    setErrorMessage('User did not accept GPS usage request!');
+                }
+            },
+        );
+
+        setPermission(result);
+        
+    }
 
     const startTracking = () => {
         
@@ -166,24 +170,3 @@ const TrackingService = (record = null) => {
 }
 
 export default TrackingService;
-
-  /**
-   * TESTS
-   * 
-   * Iniciar mt e voltar (Salva o registro com status final pausa)
-   * Iniciar mt pausar e voltar (Salva o registro com status final pausa)
-   * Iniciar mt parar e voltar  (Salva o registro com status final parado)
-   * Iniciar mt pausar, parar e voltar  (Salva o registro com status final parado)
-   * Iniciar mt pausar, iniciar e voltar (Salva o registro com status final pausa)
-   * Iniciar mt pausar, iniciar, pausar e voltar (Salva o registro com status final pausa)
-   * Iniciar mt pausar, iniciar, parar e voltar (Salva o registro com status final parado)
-   * Iniciar mt pausar, iniciar, pausar, parar e voltar (Salva o registro com status final parado)
-   * Iniciar mt parar e salvar (Salva o registro com status final finalizado)
-   * Iniciar mt pausar, parar e salvar (Salva o registro com status final finalizado)
-   * Iniciar mt pausar, iniciar, parar e salvar (Salva o registro com status final finalizado)
-   * 
-   * Os mesmos testes podem ser aplicados para registros que estão com o status pausa.
-   * 
-   * Registros finalizados não podem ativar o traking, apenas atualizar os demais campos preenchidos manualmente.
-   * 
-   */

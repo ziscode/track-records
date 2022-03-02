@@ -1,26 +1,32 @@
-import React from 'react';
-import { View, SafeAreaView, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, View, SafeAreaView, Alert } from 'react-native';
 import ImageButton from '../components/ImageButton';
 import PostDataService from '../services/PostDataService';
 import { useAuth } from '../services/AuthService';
+import { ActivityIndicatorStyle } from '../components/Styles';
 
 const HomeScreen = ({ navigation }) => {
   
   const { postTracking } = PostDataService();
   const { Logout } = useAuth();
+  const [ loading, setLoading ] = useState(false)
 
   const sendData = async () => {
+    setLoading(true);
     const result = await postTracking();
     let message = 'Não há dados para enviar.';
-    let messageList = ['AAAAAAAAAAAA'];
+    let title = 'Aviso';
+    let messageList = [];
 
     if (result) {
+      title = 'Sucesso';
+
       if (result.success > 0) {
         messageList.push(result.success+' registros foram salvos com sucesso.');
       }
 
       if (result.errors > 0) {
-        messageList.push(result.success+' registros apresentaram erros durante a validação.');
+        messageList.push(result.errors+' registros apresentaram erros durante a validação.');
       }
 
       if (result.isUpdatePost === false || result.isUpdateErrors === false) {
@@ -30,15 +36,18 @@ const HomeScreen = ({ navigation }) => {
       message = messageList.join('\n\n');
     }
 
-    Alert.alert(
-      'Success',
-      message
-    );
+    if (result === null || result)
+      Alert.alert(
+        title,
+        message
+      );
+
+    setLoading(false);
   }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ flex: 1, backgroundColor: 'white' }} pointerEvents={ loading ? 'none' : 'auto'}>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
 
@@ -62,11 +71,20 @@ const HomeScreen = ({ navigation }) => {
               btnIcon="sign-out"
               customClick={Logout}
           />
-           
+        
           </View>
         </View>
-
-
+        {
+          loading && 
+          <ActivityIndicator
+               animating = {loading}
+               vis
+               color = '#000'
+               size = "large"
+               style = {ActivityIndicatorStyle.container}/>   
+        }
+        
+        
       </View>
     </SafeAreaView>
   );

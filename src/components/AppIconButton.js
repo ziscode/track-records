@@ -9,16 +9,11 @@ const AppIconButton = (props) => {
     backgroundColor: (props.style.backgroundColor ? props.style.backgroundColor : Colors[props.color])
   };
 
-  console.log(props.style, bg, ButtonStyle.iconButton)
-  console.log('---------------------')
-
   const style = {
     ...props.style, 
     ...bg,
     ...ButtonStyle.iconButton
   }
-
-  console.log(style)
 
   return (
     <TouchableOpacity

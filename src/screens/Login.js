@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Dimensions, View, ScrollView, Text } from 'react-native';
+import { View, ScrollView, Text } from 'react-native';
 import { Input, Icon, Button } from 'react-native-elements';
 import { Formik } from "formik";
 import * as Yup from 'yup';
 import { useAuth } from '../services/AuthService';
 import { LoginStyle } from '../components/Styles';
+import { API_URL } from '@env';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
 
     const { Login, user } = useAuth();
 
@@ -45,7 +46,7 @@ const LoginScreen = ({ navigation }) => {
                     keyboardShouldPersistTaps="handled"
                     contentContainerStyle={LoginStyle.container}
                 >
-                    <Text style={LoginStyle.signUpText}>Login</Text>
+                    <Text style={LoginStyle.signUpText}>Login</Text>                    
 
                     <View style={{ width: '80%', marginLeft: 'auto', marginRight: 'auto' }}>
                         {
@@ -85,6 +86,7 @@ const LoginScreen = ({ navigation }) => {
                         disabled={isSubmitting}
                     />
 
+                    <Text style={{color:'#ffffff'}}>{API_URL}</Text>
                 </ScrollView>
 
             )}

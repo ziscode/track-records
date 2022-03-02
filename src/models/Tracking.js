@@ -1,12 +1,14 @@
 import React, { useEffect } from "react";
 import { DatabaseConnection } from "../database/database-connection";
 import DeviceInfo from 'react-native-device-info';
+import { useAuth } from "../services/AuthService";
 
 const db = DatabaseConnection.getConnection();
 
 const TrackingModel = () => {
 
     const uniqueId = DeviceInfo.getUniqueId();
+    const { user } = useAuth();
 
     const model = {
         deviceId: null,
@@ -17,7 +19,20 @@ const TrackingModel = () => {
         status: null,
         tracking: [],
         trackingInfo: [],
-        finished: false //TODO selected by user
+        finished: false, //TODO selected by user,
+        postErrors: null
+    };
+
+    const modelKeys = {
+        deviceId: "ID do dispositivo",
+        startDate: "Data início",
+        endDate: "Data término",
+        initialCoordinate: "Coordenada inicial",
+        finalCoordinate: "Coordenada final",
+        status: "Situação",
+        tracking: "Trajeto",
+        trackingInfo: "Informações do trajeto",
+        finished: "Finalizado?"
     };
 
     useEffect(() => {
@@ -53,6 +68,7 @@ const TrackingModel = () => {
             var item = rows.item(i);
             let data = JSON.parse(item.data);
             data['id'] = item.id;
+            data['postErrors'] =  item.posterrors ? JSON.parse(item.posterrors) : null;
             list.push(data);
         }
 
@@ -103,6 +119,7 @@ const TrackingModel = () => {
             let item = rows.item(0);
             model = JSON.parse(item.data);
             model['id'] = item.id;
+            model['postErrors'] =  item.posterrors ? JSON.parse(item.posterrors) : null;
         }
         
         return model;
@@ -126,7 +143,7 @@ const TrackingModel = () => {
             
             params.push(deviceUniqueId);
             params.push(new Date().getTime());
-            params.push(1); //TODO zis: update number by user authenticated                       
+            params.push(user.id);
         }
 
         let query = await ExecuteQuery(sql, params);
@@ -136,7 +153,7 @@ const TrackingModel = () => {
 
     const logicalRemove = async (id) => {
         let sql = 'UPDATE tracking SET removedat = ?, removedby = ? WHERE id = ?';
-        let query = await ExecuteQuery(sql, [new Date().getTime(), 1, id]); //TODO create logic to get current user in app and add as params   
+        let query = await ExecuteQuery(sql, [new Date().getTime(), user.id, id]);
         return query.rowsAffected > 0; 
     }
 
@@ -170,7 +187,7 @@ const TrackingModel = () => {
             let item = list[i];
             let sql = 'UPDATE tracking SET posterrors = ? WHERE deviceuniqueid = ?';
             let errors = JSON.stringify(item.errors);
-            let query = await ExecuteQuery(sql, [errors, item.deviceId]);   
+            let query = await ExecuteQuery(sql, [errors, item.data.deviceId]);   
             count += query.rowsAffected;
         }
 
@@ -235,6 +252,7 @@ const TrackingModel = () => {
 
     return {
         model,
+        modelKeys,
         find,
         list,
         save,

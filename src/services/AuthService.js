@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { handleResponse } from '../helpers/handle-response';
 import { API_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,10 +16,21 @@ const AuthContextData = {
 const AuthContext = createContext(AuthContextData);
 
 export const AuthProvider = ({ children }) => {
-  const u = getUser();
-  const [user, setUser] = useState(u && u.token ? u : null);
+  
+  const [user, setUser] = useState(null);
   const uniqueId = DeviceInfo.getUniqueId();
   const { errorHandler } = ResponseHandler();
+
+  useEffect(() => {
+    getStoragedUser();
+  }, [])
+
+  const getStoragedUser = async () => {
+    const u = await getUser();
+    
+    if (u && u.token) 
+      setUser(u);
+  }
 
   async function Login(data = {}) {
 
@@ -63,12 +74,9 @@ export const AuthProvider = ({ children }) => {
   async function getUser() {
     try {
       const jsonValue = await AsyncStorage.getItem('@storage_User')
-      console.log("jsonValue", jsonValue)
       let v = jsonValue !== null ? JSON.parse(jsonValue) : null
-      console.log('return v', v)
       return v;
     } catch (e) {
-      console.log("AAAAAAAAAAAAAAAA")
       console.log(e)
     }
   }

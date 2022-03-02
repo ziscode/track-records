@@ -11,7 +11,7 @@ import TrackingService from '../../services/TrackingService';
 import moment from 'moment';
 import TrackingModel from '../../models/Tracking';
 import AppCircleButton from '../../components/AppCircleButton';
-import { Styles } from '../../components/Styles';
+import { Styles, Colors } from '../../components/Styles';
 
 const TrackingForm = ({ route, navigation }) => {
 
@@ -29,12 +29,9 @@ const TrackingForm = ({ route, navigation }) => {
     stopTracking
   } = TrackingService(route.params && route.params.data);
 
-  const { model, save } = TrackingModel();
-  const [ entity, setEntity ] = useState(model)
-  
-  const CONTINUE_TITLE = 'Continue';
-  const PAUSE_TITLE = 'Pause';  
-  
+  const { model, modelKeys, save } = TrackingModel();
+  const [entity, setEntity] = useState(model)
+
   let unsubscribeBackListener = null;
 
   useEffect(() => {
@@ -56,12 +53,12 @@ const TrackingForm = ({ route, navigation }) => {
       pauseTracking();
     }
 
-    if (trackingStatus !== null && data.status !== FINISHED) {
+    if (trackingStatus !== null && trackingStatus !== FINISHED) {
       saveEntity(trackingStatus === TRACKING ? PAUSED : null);
 
       Alert.alert(
-        'Alert',
-        'Tracking is incomplete, the record has been saved for future changes.'
+        'Monitoramento incompleto!',
+        'O registro será salvo para alterações futuras.'
       );
     }
 
@@ -80,14 +77,14 @@ const TrackingForm = ({ route, navigation }) => {
     let res = await save(d);
 
     if (status === FINISHED && res) {
-      let message = 'Tracking created!';
-    
-      if (d.id !== null) {
-        message = 'Tracking updated!';
+      let message = 'Registro criado!';
+
+      if (d.id) {
+        message = 'Registro atualizado!';
       }
-      
+
       Alert.alert(
-        'Success',
+        'Sucesso',
         message,
         [
           {
@@ -109,7 +106,9 @@ const TrackingForm = ({ route, navigation }) => {
               behavior="padding"
               style={{ flex: 1, justifyContent: 'space-between' }}>
 
-              <View style={{flexDirection: "row", flexWrap: "wrap", marginHorizontal: 20, marginVertical: 10}}>
+              {entity && entity.status !== 'finished' &&
+
+                <View style={{ flexDirection: "row", flexWrap: "wrap", marginHorizontal: 20, marginVertical: 10 }}>
 
                   <AppCircleButton
                     disabled={permission == false}
@@ -123,8 +122,8 @@ const TrackingForm = ({ route, navigation }) => {
                   />
 
                   <AppCircleButton
-                    visible={trackingStatus === TRACKING || trackingStatus === PAUSED} 
-                    disabled={trackingStatus !== TRACKING && trackingStatus !== PAUSED}                  
+                    visible={trackingStatus === TRACKING || trackingStatus === PAUSED}
+                    disabled={trackingStatus !== TRACKING && trackingStatus !== PAUSED}
                     btnIcon="stop"
                     color="danger"
                     size={25}
@@ -134,17 +133,27 @@ const TrackingForm = ({ route, navigation }) => {
                       marginHorizontal: 15
                     }}
                     customClick={finishTracking}
-                  />                
-                
-              </View>
-              
-              <Divider style={{marginHorizontal:20, backgroundColor:'#000000'}}></Divider>
+                  />
+
+                </View>
+              }
+
+              <Divider style={{ marginHorizontal: 20, backgroundColor: '#000000' }}></Divider>
 
               {
                 (permission === false || errorMessage) &&
-                <Card containerStyle={[Styles.card, { backgroundColor: '#dc3545' }]}>
+                <Card containerStyle={[Styles.card, { backgroundColor: Colors.danger }]}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Text style={Styles.notes}>{errorMessage ? errorMessage : 'APP WITHOUT LOCATION PERMISSION'}</Text>
+                  </View>
+                </Card>
+              }
+
+              {entity && entity.postErrors &&
+                <Card containerStyle={[Styles.card, { backgroundColor: Colors.danger }]}>
+                  <View style={{ flexDirection: 'column', justifyContent: 'space-between' }}>                    
+                    <Text style={Styles.formErrorHeader}>Erros de validação!</Text>
+                    {Object.entries(entity.postErrors).map((item, i) => <Text key={i} style={Styles.formErrors}>{`${ modelKeys.hasOwnProperty(item[0]) ? modelKeys[item[0]] : item[0]  }: ${item[1]}`}</Text>)}
                   </View>
                 </Card>
               }
@@ -153,22 +162,22 @@ const TrackingForm = ({ route, navigation }) => {
 
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={Styles.notes}>Date/Time: </Text>
+                    <Text style={Styles.notes}>Data/Hora: </Text>
                     <Text style={Styles.notes}>{lastLocation.timestamp && moment(lastLocation.timestamp).format("YYYY-MM-DD HH:mm:ss")}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={Styles.notes}>Location: </Text>
-                    <Text style={Styles.notes}>{lastLocation.latitude && `Lat ${lastLocation.latitude.toFixed(4)} - Lng ${lastLocation.longitude.toFixed(4)}`}</Text>
+                    <Text style={Styles.notes}>Localização: </Text>
+                    <Text style={Styles.notes}>{lastLocation.latitude && `Lat ${lastLocation.latitude.toFixed(4)}/Lng ${lastLocation.longitude.toFixed(4)}`}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={Styles.notes}>Speed: </Text>
+                    <Text style={Styles.notes}>Velocidade: </Text>
                     <Text style={Styles.notes}>{lastLocation.speed}</Text>
                   </View>
 
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={Styles.notes}>Accuracy: </Text>
+                    <Text style={Styles.notes}>Precisão: </Text>
                     <Text style={Styles.notes}>{lastLocation.accuracy}</Text>
                   </View>
 

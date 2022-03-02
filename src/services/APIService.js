@@ -28,7 +28,6 @@ const APIService = () => {
 
             })
             .catch((error) => {
-                console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                 console.log(error)
             });
     }

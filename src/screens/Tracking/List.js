@@ -8,6 +8,7 @@ import moment from 'moment';
 import TrackingModel from '../../models/Tracking';
 import { Styles } from '../../components/Styles';
 import AlertAsync from "react-native-alert-async";
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const db = DatabaseConnection.getConnection();
 
@@ -17,7 +18,7 @@ const TrackingList = ({ navigation }) => {
 
     const { list, find, logicalRemove } = TrackingModel();
 
-    
+
     useEffect(() => {
         updateList();
 
@@ -35,11 +36,11 @@ const TrackingList = ({ navigation }) => {
         setFlatListItems(l);
     }
 
-    const editTracking = async ( id ) => {
+    const editTracking = async (id) => {
         let model = await find(id);
 
         if (model) {
-            navigation.navigate('TrackingForm', {data:model});
+            navigation.navigate('TrackingForm', { data: model });
         }
     }
 
@@ -63,10 +64,10 @@ const TrackingList = ({ navigation }) => {
 
     const removeTracking = async (id) => {
         let res = await logicalRemove(id);
-        
+
         if (res) {
             updateList();
-            
+
             await AlertAsync(
                 'Success',
                 'Record was successfully removed!',
@@ -85,50 +86,77 @@ const TrackingList = ({ navigation }) => {
 
             <Card containerStyle={Styles.card}>
 
-                <View style={{flexDirection:'row', justifyContent:'space-between', alignItems:'center'}}>
-                    <Text style={[Styles.notes, {fontSize:22}]}>Tracking ID: {item.id}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={[Styles.notes, { fontSize: 22 }]}>Código: {item.id}</Text>
+                        {item.posterrors && <Icon name={'warning'} size={20} color={'#FEDA15'} style={{ paddingLeft: 10 }} />}
+                    </View>
 
-                    <View style={{flexDirection: "row", flexWrap: "wrap"}}>
-                    {
-                        item.status == 'paused' && 
-                        <AppCircleButton
-                            btnIcon="play"  
-                            style={{backgroundColor: '#05445E', maxWidth:36, maxHeight:35}}                          
-                            size={15}
-                            customClick={() => editTracking(item.id)}
+
+                    <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                        {
+                            item.status == 'paused' &&
+
+                            <AppCircleButton
+                                btnIcon="play"
+                                style={{ backgroundColor: '#05445E', maxWidth: 36, maxHeight: 35 }}
+                                size={15}
+                                customClick={() => editTracking(item.id)}
+                            />
+                        }
+
+                        {
+                            item.status == 'finished' &&
+
+                            <AppIconButton
+                                btnIcon={"pencil"}
+                                size={14}
+                                style={{
+                                    marginLeft: 10,
+                                    minWidth: 38,
+                                    backgroundColor: '#05445E'
+                                }}
+                                customClick={() => editTracking(item.id)}
+                            />
+                        }
+
+                        <AppIconButton
+                            btnIcon={"trash"}
+                            color="danger"
+                            size={14}
+                            style={{
+                                marginLeft: 10,
+                                minWidth: 38
+                            }}
+                            customClick={() => requestRemovePermission(item.id)}
                         />
-                    }                    
-
-                    <AppIconButton                    
-                        btnIcon={"trash"}
-                        color="danger"
-                        size={14}
-                        style={{
-                            marginLeft: 10,
-                            minWidth: 38
-                        }}   
-                        customClick={() => requestRemovePermission(item.id)}
-                    />     
 
                     </View>
-				</View>                
-				
-				<Divider style={{ backgroundColor: '#dfe6e9', marginVertical:10}} />
-				
-				<View style={{flexDirection:'row', justifyContent:'space-between'}}>
-					<Text style={Styles.notes}>Start date</Text>
-					<Text style={Styles.notes}>{moment(item.startDate).format("YYYY-MM-DD HH:mm:ss")}</Text>
-				</View>
-                <View style={{flexDirection:'row', justifyContent:'space-between'}}>
-					<Text style={Styles.notes}>End date</Text>
-					<Text style={Styles.notes}>{item.endDate && moment(item.endDate).format("YYYY-MM-DD HH:mm:ss")}</Text>
-				</View>
-                <View style={{flexDirection:'row', justifyContent:'space-between'}}>
-					<Text style={Styles.notes}>Status</Text>
-					<Text style={Styles.notes}>{item.status}</Text>
-				</View>
-			</Card>
-            
+                </View>
+
+                <Divider style={{ backgroundColor: '#dfe6e9', marginVertical: 10 }} />
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={Styles.notes}>Data início</Text>
+                    <Text style={Styles.notes}>{moment(item.startDate).format("DD/MM/YYYY HH:mm:ss")}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={Styles.notes}>Data término</Text>
+                    <Text style={Styles.notes}>{item.endDate && moment(item.endDate).format("DD/MM/YYYY HH:mm:ss")}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={Styles.notes}>Situação</Text>
+                    <Text style={Styles.notes}>
+                        {
+                            item.status === 'finished' ? 'Finalizado' :
+                                (item.status === 'paused' ? 'Pausado' : item.status)
+                        }
+                    </Text>
+                </View>
+
+
+            </Card>
+
         );
     };
 
@@ -137,21 +165,21 @@ const TrackingList = ({ navigation }) => {
             <View style={{ flex: 1, backgroundColor: 'white' }}>
                 <View style={{ flex: 1 }}>
 
-                    <View style={{flexDirection: "row-reverse", flexWrap: "wrap", marginHorizontal: 20, marginVertical: 10}}>
-                        <AppIconButton                    
+                    <View style={{ flexDirection: "row-reverse", flexWrap: "wrap", marginHorizontal: 20, marginVertical: 10 }}>
+                        <AppIconButton
                             btnIcon={"plus"}
                             size={25}
                             style={{
-                                minWidth: 50,                                
+                                minWidth: 50,
                             }}
                             customClick={() => navigation.navigate('TrackingForm')}
                         />
                     </View>
 
-                    <Divider style={{marginHorizontal:20, backgroundColor:'#000000'}}></Divider>
-                    
+                    <Divider style={{ marginHorizontal: 20, backgroundColor: '#000000' }}></Divider>
+
                     <FlatList
-                        style={{ marginTop: 10 }}                        
+                        style={{ marginTop: 10 }}
                         data={flatListItems}
                         keyExtractor={(item, index) => index.toString()}
                         renderItem={({ item }) => listItemView(item)}
@@ -164,3 +192,14 @@ const TrackingList = ({ navigation }) => {
 
 
 export default TrackingList;
+
+/**
+                    
+                    <AppCircleButton
+                            btnIcon="pencil"  
+                            color="warning"
+                            style={{backgroundColor: '#05445E', maxWidth:36, maxHeight:35}}
+                            size={15}
+                            customClick={() => editTracking(item.id)}
+                        />
+                     */

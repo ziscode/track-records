@@ -39,7 +39,20 @@ export const Styles = StyleSheet.create({
 		fontSize: 18,
 		color:'#fff',
 		textTransform:'capitalize'
-	}
+	},
+    formErrorHeader: {
+        color: '#fff', 
+        textAlign: 'center', 
+        paddingBottom: 10, 
+        fontFamily: 'UbuntuBold',
+        fontSize: 22
+    },
+    formErrors: {
+        color: '#fff', 
+        paddingBottom: 5, 
+        fontFamily: 'UbuntuBold',
+        fontSize: 18,
+    }
 });
 
 export const LoginStyle = StyleSheet.create({
@@ -102,3 +115,17 @@ export const LoginStyle = StyleSheet.create({
         backgroundColor: 'rgba(110, 120, 170, 1)',
     }
 });
+
+export const ActivityIndicatorStyle = StyleSheet.create ({
+    container: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      opacity: 0.5,
+      backgroundColor: 'black',
+    }
+  })
