@@ -16,11 +16,18 @@ const TrackingModel = () => {
         endDate: null,
         initialCoordinate: null,
         finalCoordinate: null,
-        status: null,
         tracking: [],
         trackingInfo: [],
-        finished: false, //TODO selected by user,
-        postErrors: null
+        finished: true,
+        beachId: null,
+        responsibleId: null,
+        notFinishedJustification: '',
+        observation: '',
+        
+        beach: null,
+        status: null,
+        postErrors: null,
+        formErrors: null
     };
 
     const modelKeys = {
@@ -32,7 +39,11 @@ const TrackingModel = () => {
         status: "Situação",
         tracking: "Trajeto",
         trackingInfo: "Informações do trajeto",
-        finished: "Finalizado?"
+        finished: "Finalizado?",
+        beachId: "Praia",
+        responsibleId: "Responsável",
+        notFinishedJustification: "Justificativa não finalizado",
+        observation: "Observação",
     };
 
     useEffect(() => {
@@ -94,6 +105,9 @@ const TrackingModel = () => {
             let data = JSON.parse(item.data);
 
             if (data.status === 'finished') {
+                delete data.beach;
+                delete data.status;
+                delete data.postErrors;
                 list.push(data);
             }
         }
@@ -214,6 +228,9 @@ const TrackingModel = () => {
             model.endDate = location.timestamp;
             model.finalCoordinate = { latitude: location.latitude, longitude: location.longitude };
         }
+
+        if (model.responsibleId === null)
+            model.responsibleId = user.id;
 
         return model;
     }

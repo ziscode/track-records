@@ -17,7 +17,7 @@ const PostDataService = () => {
             return null;
 
         return axios
-          .post(`${API_URL}api/trackingrecord/saveapp`, list, {
+          .post(`${API_URL}api/monitoring/saveapp`, list, {
             headers: {
               Accept: 'application/json',
               'Content-Type': 'application/json',

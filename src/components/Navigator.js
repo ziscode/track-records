@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoginScreen from '../screens/Login';
@@ -8,74 +8,87 @@ import HomeScreen from '../screens/HomeScreen';
 import TrackingList from '../screens/Tracking/List';
 import TrackingForm from '../screens/Tracking/Form';
 import { useAuth } from '../services/AuthService';
+import AppIconButton from './AppIconButton';
+import HeaderBackButton from './HeaderBackButton';
 
 const Stack = createNativeStackNavigator();
 
 const Navigator = () => {
-  const { signed, user, Logout } = useAuth();
-  
-  return (    
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName={signed === true ? "HomeScreen" : "LoginScreen"}>
+  const { signed } = useAuth();
 
-          {signed !== true ?
+  const headerOptions = {
+    headerStyle: styles.headerStyle,
+    headerTitleStyle: styles.headerTitleStyle,
+    headerTintColor: '#fff',
+    headerLeft: () => (
+      <HeaderBackButton></HeaderBackButton>
+    ),
+    headerBackVisible: false,
+  }
 
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName={signed === true ? "HomeScreen" : "LoginScreen"}>
+
+        {signed !== true ?
+
+          <Stack.Screen
+            name="LoginScreen"
+            component={LoginScreen}
+            options={{
+              headerShown: false
+            }}
+          />
+          :
+          <>
             <Stack.Screen
-              name="LoginScreen"
-              component={LoginScreen}
+              name="HomeScreen"
+              component={HomeScreen}
               options={{
-                headerShown: false
+                ...headerOptions,
+                ...{
+                  title: 'Home',
+                  headerLeft: null
+                }
               }}
             />
-            :
-            <>
-              <Stack.Screen
-                name="HomeScreen"
-                component={HomeScreen}
-                options={{
-                  title: 'Registro de Usuários',
-                  headerStyle: styles.headerStyle,                  
-                  headerTitleStyle: styles.headerTitleStyle,
-                  headerTintColor: '#fff',
-                }}
-              />
 
-              <Stack.Screen
-                name="Tracking"
-                component={TrackingList}
-                options={{
-                  title: 'Tracking',
-                  headerStyle: styles.headerStyle,
-                  headerTitleStyle: styles.headerTitleStyle,
-                  headerTintColor: '#fff',
-                }}
-              />
+            <Stack.Screen
+              name="Tracking"
+              component={TrackingList}
+              options={{
+                ...headerOptions,
+                ...{
+                  title: 'Monitoramento'
+                }
+              }}
+            />
 
-              <Stack.Screen
-                name="TrackingForm"
-                component={TrackingForm}
-                options={{
-                  title: 'Tracking',
-                  headerStyle: styles.headerStyle,
-                  headerTitleStyle: styles.headerTitleStyle,
-                  headerTintColor: '#fff',
-                }}
-              />
-            </>
-          }
-        </Stack.Navigator>
-      </NavigationContainer>    
+            <Stack.Screen
+              name="TrackingForm"
+              component={TrackingForm}
+              options={{
+                ...headerOptions,
+                ...{
+                  title: 'Monitoramento'
+                }
+              }}
+            />
+          </>
+        }
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
 const styles = StyleSheet.create({
-    headerStyle: {
-        backgroundColor: '#05445E',
-    },
-    headerTitleStyle: {
-        fontWeight: 'bold',
-        color: '#fff'
-    }
+  headerStyle: {
+    backgroundColor: '#05445E',
+  },
+  headerTitleStyle: {
+    fontWeight: 'bold',
+    color: '#fff'
+  }
 })
 
 export default Navigator;

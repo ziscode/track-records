@@ -13,18 +13,13 @@ export const Colors = {
 
 export const ButtonStyle = StyleSheet.create({
     circleButton: {
-      width: 100,
-      height: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 10,
-      borderRadius: 100,
+        width:36,
+        height:36,
+        borderRadius: 500,
     },
 
     iconButton: {
-        alignItems: 'center',
         color: '#ffffff',
-        padding: 10,
         borderRadius: 0,
     },
 });
@@ -38,7 +33,6 @@ export const Styles = StyleSheet.create({
 	notes: {
 		fontSize: 18,
 		color:'#fff',
-		textTransform:'capitalize'
 	},
     formErrorHeader: {
         color: '#fff', 

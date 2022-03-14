@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, View, SafeAreaView, Alert } from 'react-native';
 import ImageButton from '../components/ImageButton';
 import PostDataService from '../services/PostDataService';
 import { useAuth } from '../services/AuthService';
 import { ActivityIndicatorStyle } from '../components/Styles';
+import APIService from '../services/APIService';
 
 const HomeScreen = ({ navigation }) => {
   
   const { postTracking } = PostDataService();
   const { Logout } = useAuth();
   const [ loading, setLoading ] = useState(false)
+  const { requestBasilarData } = APIService();
+
+  useEffect(() => {
+    requestBasilar();
+  }, [])
+  
+  const requestBasilar = async () => {
+    if (loading === false)
+      setLoading(true);
+
+    await requestBasilarData();
+    setLoading(false);
+  }
 
   const sendData = async () => {
     setLoading(true);

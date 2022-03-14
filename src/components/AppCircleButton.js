@@ -1,8 +1,7 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
 import PropTypes from 'prop-types';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { Colors, ButtonStyle } from './Styles';
+import {Button,  Icon} from 'react-native-elements';
 
 const AppCircleButton = (props) => {
   if (!props.visible) {
@@ -10,49 +9,58 @@ const AppCircleButton = (props) => {
   }
 
   const style = {
-    ...props.style, 
+    ...props.style,
     ...{
       backgroundColor: (props.style.backgroundColor ? props.style.backgroundColor : Colors[props.color])
     }
   }
 
   return (
-    <TouchableOpacity
-      activeOpacity={props.disabled ? 0.1 : 1}
+    <Button
+      icon={<Icon
+        type={props.iconType}
+        name={props.iconName}
+        size={props.iconSize}
+        color={props.iconColor}
+      />}
+      buttonStyle={{ ...ButtonStyle.circleButton, ...style }}
+      onPress={props.customClick}
       disabled={props.disabled}
-
-      style={{ ... ButtonStyle.circleButton, ...style}}
-      onPress={props.customClick}>
-
-      <Icon name={props.btnIcon} size={props.size} color={props.iconColor} />
-
-    </TouchableOpacity>
+    />
   );
 };
 
 AppCircleButton.propTypes = {
   disabled: PropTypes.bool,
   visible: PropTypes.bool,
-  iconColor: PropTypes.string,
-  size: PropTypes.number,
   backgroundColor: PropTypes.string,
   color: PropTypes.string,
-  maxWidth: PropTypes.number,
-  maxHeight: PropTypes.number,
   customClick: PropTypes.func,
-  style: PropTypes.object
+  style: PropTypes.object,
+ 
+  iconName: PropTypes.string,
+  iconType: PropTypes.string,
+  iconSize: PropTypes.number,
+  iconColor: PropTypes.string,
+
 };
 AppCircleButton.defaultProps = {
   disabled: false,
   visible: true,
-  iconColor: '#ffffff',
-  size: 20,
-  color: 'primary',  
+  
+  
+  color: 'primary',
   style: {
     maxWidth: 36,
     maxHeight: 36,
   },
-  customClick: (event) => {},
+  customClick: (event) => { },
+
+  iconName: '',
+  iconType: 'font-awesome',
+  iconSize: 20,
+  iconColor: '#ffffff',  
+  
 };
 
 export default AppCircleButton;
