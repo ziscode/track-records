@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     getStoragedUser();
+
   }, [])
 
   const getStoragedUser = async () => {

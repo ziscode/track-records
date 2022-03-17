@@ -18,7 +18,7 @@ const TrackingModel = () => {
         finalCoordinate: null,
         tracking: [],
         trackingInfo: [],
-        finished: true,
+        finished: null,
         beachId: null,
         responsibleId: null,
         notFinishedJustification: '',

@@ -1,10 +1,12 @@
 import { useAuth } from '../services/AuthService';
 import { Alert } from 'react-native';
+import { useIndicator } from "../components/AppActivityIndicator";
 
 export const ResponseHandler = () => {
     
     const { Logout } = useAuth();
     const DEFAULT_MESSAGE = 'Ops! Ocorreu um erro durante a requisição';
+    const indicator = useIndicator();
 
     const showError = (title, message) => {
         Alert.alert(
@@ -16,6 +18,8 @@ export const ResponseHandler = () => {
     const errorHandler = (error) => {
 
         try {
+            indicator.hide();
+            
             if (error.response) {  
                 let response = error.response;
             

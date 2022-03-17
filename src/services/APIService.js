@@ -70,15 +70,15 @@ const APIService = () => {
         let d1 = new Date(!last ? null : parseInt(last));
         let d2 = new Date();
         let diff = diff_hours(d2, d1);
-        let beaches = await getStoragedBeaches();
+        // let beaches = await getStoragedBeaches();
 
-        if (diff >= 24 || !last || beaches.length === 0) {
+        // if (diff >= 24 || !last || beaches.length === 0) {
             await AsyncStorage.setItem(LAST_TIME_REQUEST_KEY, d2.getTime().toString());
             await requestBeaches();
             return true;
-        }
+        // }
 
-        return false;
+        //return false;
     }
 
     const diff_hours = (dt2, dt1) => {

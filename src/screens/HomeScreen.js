@@ -4,26 +4,13 @@ import ImageButton from '../components/ImageButton';
 import PostDataService from '../services/PostDataService';
 import { useAuth } from '../services/AuthService';
 import { ActivityIndicatorStyle } from '../components/Styles';
-import APIService from '../services/APIService';
 
 const HomeScreen = ({ navigation }) => {
-  
+
   const { postTracking } = PostDataService();
   const { Logout } = useAuth();
-  const [ loading, setLoading ] = useState(false)
-  const { requestBasilarData } = APIService();
+  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    requestBasilar();
-  }, [])
-  
-  const requestBasilar = async () => {
-    if (loading === false)
-      setLoading(true);
-
-    await requestBasilarData();
-    setLoading(false);
-  }
 
   const sendData = async () => {
     setLoading(true);
@@ -36,11 +23,11 @@ const HomeScreen = ({ navigation }) => {
       title = 'Sucesso';
 
       if (result.success > 0) {
-        messageList.push(result.success+' registros foram salvos com sucesso.');
+        messageList.push(result.success + ' registros foram salvos com sucesso.');
       }
 
       if (result.errors > 0) {
-        messageList.push(result.errors+' registros apresentaram erros durante a validação.');
+        messageList.push(result.errors + ' registros apresentaram erros durante a validação.');
       }
 
       if (result.isUpdatePost === false || result.isUpdateErrors === false) {
@@ -61,44 +48,44 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: 'white' }} pointerEvents={ loading ? 'none' : 'auto'}>
+      <View style={{ flex: 1, backgroundColor: 'white' }} pointerEvents={loading ? 'none' : 'auto'}>
         <View style={{ flex: 1 }}>
           <View style={{ flex: 1 }}>
 
-          <ImageButton
+            <ImageButton
               title="Monitoramentos"
               btnColor='#2992C4'
               btnIcon="map-marker"
               customClick={() => navigation.navigate('Tracking')}
-          />
+            />
 
-          <ImageButton
+            <ImageButton
               title="Enviar Dados"
               btnColor='#2992C4'
               btnIcon="rocket"
               customClick={sendData}
-          />
+            />
 
-          <ImageButton
+            <ImageButton
               title="Sair"
               btnColor='#2992C4'
               btnIcon="sign-out"
               customClick={Logout}
-          />
-        
+            />
+
           </View>
         </View>
         {
-          loading && 
+          loading &&
           <ActivityIndicator
-               animating = {loading}
-               vis
-               color = '#000'
-               size = "large"
-               style = {ActivityIndicatorStyle.container}/>   
+            animating={loading}
+            vis
+            color='#000'
+            size="large"
+            style={ActivityIndicatorStyle.container} />
         }
-        
-        
+
+
       </View>
     </SafeAreaView>
   );

@@ -87,9 +87,9 @@ const TrackingList = ({ navigation }) => {
             <Card containerStyle={Styles.card}>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View>
-                        <Text style={[Styles.notes, { fontSize: 22 }]}>Código: {item.id}</Text>
-                        {(item.postErrors || item.formErrors) && <Icon name={'warning'} size={20} color={'#FEDA15'} style={{ paddingLeft: 10 }} />}
+                    <View style={{flexDirection: 'row'}}>
+                        <Text style={[Styles.notes, { fontSize: 24 }]}>Código: {item.id}</Text>
+                        {(item.postErrors || item.formErrors) && <Icon name={'warning'} size={20} color={'#FEDA15'} style={{ paddingLeft: 10, paddingTop:7 }} />}
                     </View>
 
 

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import LoginScreen from '../screens/Login';
@@ -8,13 +8,16 @@ import HomeScreen from '../screens/HomeScreen';
 import TrackingList from '../screens/Tracking/List';
 import TrackingForm from '../screens/Tracking/Form';
 import { useAuth } from '../services/AuthService';
-import AppIconButton from './AppIconButton';
 import HeaderBackButton from './HeaderBackButton';
+import APIService from '../services/APIService';
+import { useIndicator } from './AppActivityIndicator';
 
 const Stack = createNativeStackNavigator();
 
 const Navigator = () => {
   const { signed } = useAuth();
+  const { requestBasilarData } = APIService();
+  const indicator = useIndicator();
 
   const headerOptions = {
     headerStyle: styles.headerStyle,
@@ -24,6 +27,17 @@ const Navigator = () => {
       <HeaderBackButton></HeaderBackButton>
     ),
     headerBackVisible: false,
+  }
+
+  useEffect(() => {
+    if (signed)
+      requestInitialData();
+  }, [signed])
+
+  const requestInitialData = async () => {
+    indicator.show();
+    await requestBasilarData();
+    indicator.hide();
   }
 
   return (
@@ -74,6 +88,7 @@ const Navigator = () => {
                 }
               }}
             />
+
           </>
         }
       </Stack.Navigator>
