@@ -1,22 +1,38 @@
-import React, {
-    useState,
-    useEffect
-} from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 import { Platform } from 'react-native';
 import { requestMultiple, PERMISSIONS } from 'react-native-permissions';
 import Geolocation from 'react-native-geolocation-service';
 
-const TrackingService = () => {
+const TrackingContextData = {
+    location: null,
+    permission: {
+        has: null,
+        message: null,
+    },
+    tracking: [],
+    isTracking: false,
+    startTracking: () => { },
+    stopTracking: () => { },
+    watch: () => { },
+    watching: false
+}
 
-    const GPS_MESSAGE = 'Sem permissão de uso do GPS!';    
-    
+const TrackingContext = createContext(TrackingContextData);
+
+export const TrackingServiceProvider = ({ children }) => {
+
+    const GPS_MESSAGE = 'Sem permissão de uso do GPS!';
+
     const [permission, setPermission] = useState({
         has: null,
         message: null,
     });
 
     const [location, setLocation] = useState(null);
+    const [tracking, setTracking] = useState([]);
+    const [isTracking, setIsTracking] = useState(false);
+    const [watching, setWatching] = useState(false);
 
     const [unsubscribe, setUnsubscribe] = useState({
         'watchId': null
@@ -24,11 +40,18 @@ const TrackingService = () => {
 
     useEffect(() => {
         return () => {
+            stopTracking();
             unsubscribeGeolocation();
         }
     }, [unsubscribe])
 
-    const loadPosition = async () => {
+    useEffect(() => {
+        if (isTracking) 
+            setTracking(previous => [...previous, location]);
+            
+    }, [location])
+
+    const watch = async () => {
         const result = await requestMultiple(
             [
                 PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
@@ -60,17 +83,18 @@ const TrackingService = () => {
         setPermission({ ...permission });
 
         if (result === true && unsubscribe.watchId == null) {
-            watch();
+            setWatching(true);
+            watchPosition();
         }
 
     }
 
-    const watch = () => {
+    const watchPosition = () => {
         let watchId = Geolocation.watchPosition(
             position => {
                 let location = position.coords;
                 location['timestamp'] = position.timestamp;
-                setLocation({...location});
+                setLocation({ ...location });
             },
             error => {
                 setErrorMessage(error.message);
@@ -88,16 +112,20 @@ const TrackingService = () => {
         }
     }
 
-    const startTracking = () => {        
-        loadPosition();
+    const startTracking = () => {
+        setTracking([]);
+        setIsTracking(true);
+        watch();
     }
 
     const stopTracking = async () => {
+        setIsTracking(false);
         unsubscribeGeolocation();
     }
 
     const unsubscribeGeolocation = () => {
         if (unsubscribe && unsubscribe.watchId !== null) {
+            setWatching(false);
             Geolocation.clearWatch(unsubscribe.watchId);
             setUnsubscribe({
                 'watchId': null
@@ -109,13 +137,26 @@ const TrackingService = () => {
         return false;
     }
 
-    return {
-        location,
-        permission,
-        startTracking,
-        stopTracking,
-    }
-
+    return (
+        <TrackingContext.Provider
+            value={
+                { 
+                    location, 
+                    permission, 
+                    tracking, 
+                    isTracking, 
+                    startTracking, 
+                    stopTracking, 
+                    watch, 
+                    watching 
+                }
+            }
+        >
+            {children}
+        </TrackingContext.Provider>
+    );
 }
 
-export default TrackingService;
+export function useTracking() {
+    return useContext(TrackingContext);
+}

@@ -7,10 +7,10 @@ import { Platform } from 'react-native';
 import { requestMultiple, PERMISSIONS } from 'react-native-permissions';
 import Geolocation from 'react-native-geolocation-service';
 
-const TrackingService2 = () => {
+const TrackingServiceOld = () => {
 
-    const GPS_MESSAGE = 'Sem permissão de uso do GPS!';
-
+    const GPS_MESSAGE = 'Sem permissão de uso do GPS!';    
+    
     const [permission, setPermission] = useState({
         has: null,
         message: null,
@@ -21,10 +21,6 @@ const TrackingService2 = () => {
     const [unsubscribe, setUnsubscribe] = useState({
         'watchId': null
     });
-
-    useEffect(() => {        
-        
-    }, []);
 
     useEffect(() => {
         return () => {
@@ -74,13 +70,10 @@ const TrackingService2 = () => {
             position => {
                 let location = position.coords;
                 location['timestamp'] = position.timestamp;
-                setLocation({...location})
-
-                console.log(location.timestamp)
+                setLocation({...location});
             },
             error => {
-                permission.message = error.message;
-                setPermission({ ...permission });
+                setErrorMessage(error.message);
             },
             {
                 enableHighAccuracy: true,
@@ -95,7 +88,7 @@ const TrackingService2 = () => {
         }
     }
 
-    const startTracking = () => {
+    const startTracking = () => {        
         loadPosition();
     }
 
@@ -121,9 +114,8 @@ const TrackingService2 = () => {
         permission,
         startTracking,
         stopTracking,
-        unsubscribeGeolocation
     }
 
 }
 
-export default TrackingService2;
+export default TrackingServiceOld;

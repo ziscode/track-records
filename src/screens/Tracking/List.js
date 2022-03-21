@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FlatList, Alert, View, SafeAreaView } from 'react-native';
+import { FlatList, Alert, View, SafeAreaView, ToastAndroid, } from 'react-native';
 import { Text, Card, Divider } from 'react-native-elements';
 import AppIconButton from '../../components/AppIconButton';
 import AppCircleButton from '../../components/AppCircleButton';
@@ -67,16 +67,10 @@ const TrackingList = ({ navigation }) => {
 
         if (res) {
             updateList();
-
-            await AlertAsync(
-                'Sucesso',
-                'O registro foi removido com sucesso!',
-                [
-                    {
-                        text: 'OK'
-                    }
-                ],
-                { cancelable: true }
+            ToastAndroid.showWithGravity(
+                'O registro foi removido com sucesso',
+                ToastAndroid.LONG,
+                ToastAndroid.CENTER
             );
         }
     }
@@ -87,13 +81,13 @@ const TrackingList = ({ navigation }) => {
             <Card containerStyle={Styles.card}>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View style={{flexDirection: 'row'}}>
+                    <View style={{ flexDirection: 'row' }}>
                         <Text style={[Styles.notes, { fontSize: 24 }]}>Código: {item.id}</Text>
-                        {(item.postErrors || item.formErrors) && <Icon name={'warning'} size={20} color={'#FEDA15'} style={{ paddingLeft: 10, paddingTop:7 }} />}
+                        {(item.postErrors || item.formErrors) && <Icon name={'warning'} size={20} color={'#FEDA15'} style={{ paddingLeft: 10, paddingTop: 7 }} />}
                     </View>
 
 
-                    <View style={{ flexDirection: "row"}}>
+                    <View style={{ flexDirection: "row" }}>
                         {
                             item.status == 'paused' &&
 

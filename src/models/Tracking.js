@@ -23,7 +23,8 @@ const TrackingModel = () => {
         responsibleId: null,
         notFinishedJustification: '',
         observation: '',
-        
+
+        duration: null,
         beach: null,
         status: null,
         postErrors: null,
@@ -142,27 +143,38 @@ const TrackingModel = () => {
 
     const save = async (model) => {
         let data = { ...checkModel(model) };
-        let id = data.id;
-        let deviceUniqueId = data.deviceId;
+        let id = data.id;        
         delete data.id;
         let json = JSON.stringify(data); 
         let params = [json];
-        let sql = '';
-
+        
         if (id > 0) {
-            sql = 'UPDATE tracking SET data = ? WHERE id = ?';
-            params.push(id)
-        } else {
-            sql = 'INSERT INTO tracking (data, deviceuniqueid, createdat, createdby) VALUES (?, ?, ?, ?)';
-            
-            params.push(deviceUniqueId);
-            params.push(new Date().getTime());
-            params.push(user.id);
+            params.push(null);
+            params.push(id);            
+            await ExecuteQuery('UPDATE tracking SET data = ?, postErrors = ? WHERE id = ?', params);
+            return id;
         }
+        
+        let res = null;
+        let query = null;
+        let deviceUniqueId = data.deviceId;
+        let sql = 'INSERT INTO tracking (data, deviceuniqueid, createdat, createdby) VALUES (?, ?, ?, ?)';        
 
-        let query = await ExecuteQuery(sql, params);
-        let result = query.rowsAffected > 0;
-        return result;        
+        params.push(deviceUniqueId);
+        params.push(new Date().getTime());
+        params.push(user.id);
+        
+        query = await ExecuteQuery(sql, params);       
+
+        if (query.rowsAffected > 0) {
+            query = await ExecuteQuery('SELECT id FROM tracking ORDER BY id DESC LIMIT 1');
+            
+            if (query.rows && query.rows.length > 0) {
+                return query.rows.item(0).id;
+            }
+        }
+        
+        return null;
     }
 
     const logicalRemove = async (id) => {
